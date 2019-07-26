@@ -3,15 +3,58 @@ from sys import argv
 import json
 import pymysql
 
-@get("/admin")
-def admin_portal():
-	return template("pages/admin.html")
+# categories endpoints
 
+
+@post("/category")
+def create_category(category_name):
+    pass
+
+
+@delete("/category/<id>")
+def delete_category(id):
+    pass
+
+
+@get("/categories")
+def get_all_categories():
+    pass
+
+# products endpoints
+
+
+@post("product")
+def add_or_edit_product():
+    pass
+
+
+@get("/product/<id>")
+def get_product(id):
+    pass
+
+
+@delete("/product/<id>")
+def delete_poduct():
+    pass
+
+
+@get("/products")
+def get_all_products():
+    pass
+
+# index endpoint
 
 
 @get("/")
 def index():
     return template("index.html")
+
+# admin endpoint
+
+
+@get("/admin")
+def admin_portal():
+    return template("pages/admin.html")
 
 
 @get('/js/<filename:re:.*\.js>')
@@ -29,4 +72,4 @@ def images(filename):
     return static_file(filename, root='images')
 
 
-run(host='0.0.0.0', port=argv[1])
+run(host='localhost', port=argv[1], reloader=True, debug=True)
