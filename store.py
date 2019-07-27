@@ -23,7 +23,8 @@ def create_category():
       if category_name is None:
         response.status = 400
         response["status__line"] = "name parameter is missing"
-        return response
+        error = {"STATUS": "ERROR", "MSG": "name parameter is missing"}
+        return json.dumps(error)   
       
       search_category_query = f'select name from categories where name = "{category_name}"'
       cursor.execute(search_category_query)
@@ -31,17 +32,20 @@ def create_category():
       if category_exists:
         response.status = 200
         response["status__line"] = "category already exists"
-        return response
+        error = {"STATUS": "ERROR", "MSG": "category already exists"}
+        return json.dumps(error)
 
       sql = 'INSERT INTO categories VALUES(null,"{}")'.format(category_name)
       connection.commit()
       response.status = 201
       response["status__line"] = "category created successfully"
-      return response
+      success = {"STATUS":"The category was created successfully"}
+      return json.dumps(success)
     except Exception as e:
       response.status = 500
       response["status__line"] = "internal Error"
-      return response
+      error = {"STATUS": "ERROR", "MSG": "internal Error"}
+      return json.dumps(error)
             
 @delete("/category/<id>")
 def delete_category(id):
@@ -49,26 +53,26 @@ def delete_category(id):
   with connection.cursor() as cursor:
     try:
       search_category_query = 'select name from categories where id = {}'.format(cat_id)
-      print(search_category_query)
       cursor.execute(search_category_query)
       category_exists = cursor.fetchone() 
-      print(category_exists)
       if not category_exists:
         response.status = 404
         response["status__line"] = "category not found"
-        return response
-
+        error = {"STATUS": "ERROR", "MSG": "category not found"}
+        return json.dumps(error)   
       sql = 'DELETE FROM categories WHERE cat_id = "{}"'.format(cat_id)
-      print(sql)
       cursor.execute(sql)
       connection.commit()
       response.status = 201
       response["status__line"] = "category deleted successfully"
-      return response
+      success = {"STATUS":"The category was deleted successfully"}
+      json.dumps(success)
+
     except Exception as e:
       response.status = 500
       response["status__line"] = "internal Error"
-      return response    
+      error = {"STATUS": "ERROR", "MSG": "internal Error"}
+      return json.dumps(error)   
 
 @get("/categories")
 def get_all_categories():
@@ -77,9 +81,12 @@ def get_all_categories():
       sql = 'SELECT * FROM categories'
       cursor.execute(sql)
       result = cursor.fetchall()
-      return json.dumps(result)
+      categories = {"CATEGORIES": result, "STATUS":"The category was created successfully"}
+
+      return json.dumps(categories)
     except Exception as e:
-          print(e)   
+          error = {"STATUS": "ERROR", "MSG": "inernal error"}
+          return json.dumps(error)   
 
 # products endpoints
 
