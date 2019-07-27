@@ -81,11 +81,14 @@ def get_all_categories():
       sql = 'SELECT * FROM categories'
       cursor.execute(sql)
       result = cursor.fetchall()
-      categories = {"CATEGORIES": result, "STATUS":"The category was created successfully"}
-
+      categories = {"CATEGORIES": result, "STATUS":"Categories fetched"}
+      response.status = 200
+      response["status__line"] = "Categories fetched"
       return json.dumps(categories)
     except Exception as e:
           error = {"STATUS": "ERROR", "MSG": "inernal error"}
+          response.status = 500
+          response["status__line"] = "internal error"
           return json.dumps(error)   
 
 # products endpoints
@@ -187,18 +190,49 @@ def delete_poduct(id):
 
 @get("/products")
 def get_all_products():
-    pass
+  with connection.cursor() as cursor:
+    try:
+      sql = 'SELECT * FROM products'
+      cursor.execute(sql)
+      result = cursor.fetchall()
+      for product in result:
+        product["favorite"] = convert_bit_to_str(product["favorite"])
+      products = {"PRODUCTS": result, "STATUS":"Products fetched"}
+      response.status = 200
+      response["status__line"] = "Products fetched"
+      return json.dumps(products)
+    except Exception as e:
+      response.status = 500
+      response["status__line"] = "internal error"
+      error = {"STATUS": "ERROR", "MSG": "inernal error"}
+      return json.dumps(error)
+
+@get("/category/<id>/products")
+def list_products_by_category(id):
+  cat_id = id
+  with connection.cursor() as cursor:
+    try:
+      sql = 'SELECT * FROM products where category = {}'.format(cat_id)
+      cursor.execute(sql)
+      result = cursor.fetchall()
+      for product in result:
+        product["favorite"] = convert_bit_to_str(product["favorite"])
+      products = {"PRODUCTS": result, "STATUS":"Products fetched"}
+      response.status = 200
+      response["status__line"] = "Products fetched"
+      return json.dumps(products)
+    except Exception as e:
+      response.status = 500
+      response["status__line"] = "internal error"
+      error = {"STATUS": "ERROR", "MSG": "inernal error"}
+      return json.dumps(error)
 
 # index endpoint
-
-
 @get("/")
 def index():
-    return template("index.html")
+    return template("index.html" )
 
 # admin endpoint
-
-
 @get("/admin")
 def admin_portal():
     return template("pages/admin.html")
