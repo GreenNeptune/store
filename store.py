@@ -159,9 +159,30 @@ def get_product(id):
 
 
 @delete("/product/<id>")
-def delete_poduct():
-  pass
- 
+def delete_poduct(id):
+  prod_id = id
+  with connection.cursor() as cursor:
+    try:
+      search_product_query = 'select * from products where id = {}'.format(prod_id)
+      cursor.execute(search_product_query)
+      product_exists = cursor.fetchone() 
+      if not product_exists:
+        response.status = 404
+        response["status__line"] = "product not found"
+        error = {"STATUS": "ERROR", "MSG": "product not found"}
+        return json.dumps(error)   
+      sql = 'DELETE FROM products WHERE id = "{}"'.format(prod_id)
+      cursor.execute(sql)
+      connection.commit()
+      response.status = 201
+      response["status__line"] = "product deleted successfully"
+      success = {"STATUS":"The product was deleted successfully"}
+      json.dumps(success)
+    except Exception as e:
+      response.status = 500
+      response["status__line"] = "internal Error"
+      error = {"STATUS": "ERROR", "MSG": "internal Error"}
+      return json.dumps(error)
 
 
 @get("/products")
