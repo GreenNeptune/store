@@ -60,7 +60,7 @@ def delete_category(id):
         response["status__line"] = "category not found"
         error = {"STATUS": "ERROR", "MSG": "category not found"}
         return json.dumps(error)   
-      sql = 'DELETE FROM categories WHERE cat_id = "{}"'.format(cat_id)
+      sql = 'DELETE FROM categories WHERE id = "{}"'.format(cat_id)
       cursor.execute(sql)
       connection.commit()
       response.status = 201
@@ -134,12 +134,34 @@ def add_or_edit_product():
 
 @get("/product/<id>")
 def get_product(id):
-  pass
+  prod_id = id
+  with connection.cursor() as cursor:
+    try:
+      search_category_query = 'select * from products where id = {}'.format(prod_id)
+      cursor.execute(search_category_query)
+      product_exists = cursor.fetchone() 
+      product_exists["favorite"] = convert_bit_to_str(product_exists["favorite"])
+      print(product_exists)
+      if not product_exists:
+        response.status = 404
+        response["status__line"] = "product not found"
+        error = {"STATUS": "ERROR", "MSG": "product not found"}
+        return json.dumps(error)   
+      response.status = 200
+      response["status__line"] = "The product was fetched successfullyy"
+      products = {"PRODUCTS": product_exists, "STATUS":"The product was fetched successfullyy"} 
+      return json.dumps(products)
+    except Exception as e:
+      response.status = 500
+      response["status__line"] = "internal Error"
+      error = {"STATUS": "ERROR", "MSG": "internal Error"}
+      return json.dumps(error) 
 
 
 @delete("/product/<id>")
 def delete_poduct():
   pass
+ 
 
 
 @get("/products")
@@ -174,6 +196,10 @@ def stylesheets(filename):
 @get('/images/<filename:re:.*\.(jpg|png|gif|ico)>')
 def images(filename):
     return static_file(filename, root='images')
+
+def convert_bit_to_str(bin_bit):
+  bit =  str(bin_bit)
+  return bit[5]
 
 
 run(host='localhost', port=argv[1], reloader=True, debug=True)
