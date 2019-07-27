@@ -25,7 +25,7 @@ def create_category():
         response["status__line"] = "name parameter is missing"
         return response
       
-      search_category_query = f'select cat_name from categories where cat_name = "{category_name}"'
+      search_category_query = f'select name from categories where name = "{category_name}"'
       cursor.execute(search_category_query)
       category_exists = cursor.fetchone() 
       if category_exists:
@@ -48,7 +48,7 @@ def delete_category(id):
   cat_id = id
   with connection.cursor() as cursor:
     try:
-      search_category_query = 'select cat_name from categories where cat_id = {}'.format(cat_id)
+      search_category_query = 'select name from categories where id = {}'.format(cat_id)
       print(search_category_query)
       cursor.execute(search_category_query)
       category_exists = cursor.fetchone() 
@@ -72,7 +72,14 @@ def delete_category(id):
 
 @get("/categories")
 def get_all_categories():
-  pass
+  with connection.cursor() as cursor:
+    try:
+      sql = 'SELECT * FROM categories'
+      cursor.execute(sql)
+      result = cursor.fetchall()
+      return json.dumps(result)
+    except Exception as e:
+          print(e)   
 
 # products endpoints
 
