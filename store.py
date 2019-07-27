@@ -92,45 +92,61 @@ def get_all_categories():
           return json.dumps(error)   
 
 # products endpoints
-        
-#TODO create a error and success messages 
+
 @post("/product")
 def add_or_edit_product():
   with connection.cursor() as cursor:
     try:
-      product_column_names = ["category", "description", "price", "title", "favorite", "favorite", "img_url", "id"]
-      # print(request.json.keys())
-       
-      for key in request.json.keys():
-        if key not in product_column_names:
-          return "missing parameters"
-      return "200 ok"
+      # missing parameters
+      product_column_names = ["category", "desc", "price", "title", "favorite", "img_url", "id"]
+      for key in product_column_names:
+        if key not in request.json.keys():
+          response.status = 400
+          response["status__line"] = "missing parameters"
+          error = {"STATUS": "ERROR", "MSG": "missing parameters"}
+          return json.dumps(error)
+
+      # category not found
+      product_category = request.json.get("category")
+      search_category_query = f'select * from products where category = {product_category}'
+      cursor.execute(search_category_query)
+      category_exists = cursor.fetchone()
+      if not category_exists:
+        response.status = 404
+        response["status__line"] = "Category not found"
+        error = {"STATUS": "ERROR", "MSG": "Category not found"}
+        return json.dumps(error)
+        
+      #  valid the product id    
       product_id = request.json.get("id")
       search_product_query = f'select * from products where id = {product_id}'
       cursor.execute(search_product_query)
-      product_exists = cursor.fetchone()
-       
-        
-      #  valid the product id    
+      product_exists = cursor.fetchone()         
       prod = request.json
       if product_exists:
         # updating a new procut
-        update_product_query = "UPDATE products SET category={},description='{}',price={},title='{}',favorite={} ,img_url='{}' where id = {}".format(prod["category"],prod["description"], prod["price"], prod["title"], prod["favorite"],prod["img_url"], prod["id"])
+        update_product_query = "UPDATE products SET category={},description='{}',price={},title='{}',favorite={} ,img_url='{}' where id = {}".format(prod["category"],prod["desc"], prod["price"], prod["title"], prod["favorite"],prod["img_url"], prod["id"])
         cursor.execute(update_product_query)
         connection.commit() 
-        return "products updated"  
+        success = {"STATUS":"The product was added/updated successfully"} 
+        response.status = 201
+        response["status__line"] = "The product was added/updated successfully"
+        return json.dumps(success)  
       else:
         # creating a new procut
         create_product_query = "INSERT INTO products (category, description, price, title, favorite, img_url,id)"
         create_product_query += "values({},'{}',{},'{}',{} ,'{}',{})".format(prod["category"],prod["description"], prod["price"], prod["title"], prod["favorite"],prod["img_url"], prod["id"])
         print(create_product_query)
         cursor.execute(create_product_query)
-        connection.commit() 
-        return "new products created"      
+        connection.commit()
+        success = {"STATUS":"The product was added/updated successfully"} 
+        response.status = 201
+        response["status__line"] = "The product was added/updated successfully"
+        return json.dumps(success)     
     except Exception as e:
       response.status = 500
       response["status__line"] = "internal Error"
-      error = {"STATUS": "ERROR", "MSG": "internal Error", "PRODUCT _ID":product_id}
+      error = {"STATUS": "ERROR", "MSG": "internal Error"}
       return json.dumps(error)  
    
 
