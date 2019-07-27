@@ -43,9 +43,32 @@ def create_category():
       response["status__line"] = "internal Error"
       return response
             
-@delete("/category/<id:int>")
+@delete("/category/<id>")
 def delete_category(id):
-  pass     
+  cat_id = id
+  with connection.cursor() as cursor:
+    try:
+      search_category_query = 'select cat_name from categories where cat_id = {}'.format(cat_id)
+      print(search_category_query)
+      cursor.execute(search_category_query)
+      category_exists = cursor.fetchone() 
+      print(category_exists)
+      if not category_exists:
+        response.status = 404
+        response["status__line"] = "category not found"
+        return response
+
+      sql = 'DELETE FROM categories WHERE cat_id = "{}"'.format(cat_id)
+      print(sql)
+      cursor.execute(sql)
+      connection.commit()
+      response.status = 201
+      response["status__line"] = "category deleted successfully"
+      return response
+    except Exception as e:
+      response.status = 500
+      response["status__line"] = "internal Error"
+      return response    
 
 @get("/categories")
 def get_all_categories():
