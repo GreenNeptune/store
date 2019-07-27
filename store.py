@@ -89,21 +89,57 @@ def get_all_categories():
           return json.dumps(error)   
 
 # products endpoints
-
-
-@post("product")
+        
+#TODO create a error and success messages 
+@post("/product")
 def add_or_edit_product():
-    pass
+  with connection.cursor() as cursor:
+    try:
+      product_column_names = ["category", "description", "price", "title", "favorite", "favorite", "img_url", "id"]
+      # print(request.json.keys())
+       
+      for key in request.json.keys():
+        if key not in product_column_names:
+          return "missing parameters"
+      return "200 ok"
+      product_id = request.json.get("id")
+      search_product_query = f'select * from products where id = {product_id}'
+      cursor.execute(search_product_query)
+      product_exists = cursor.fetchone()
+       
+        
+      #  valid the product id    
+      prod = request.json
+      if product_exists:
+        # updating a new procut
+        update_product_query = "UPDATE products SET category={},description='{}',price={},title='{}',favorite={} ,img_url='{}' where id = {}".format(prod["category"],prod["description"], prod["price"], prod["title"], prod["favorite"],prod["img_url"], prod["id"])
+        cursor.execute(update_product_query)
+        connection.commit() 
+        return "products updated"  
+      else:
+        # creating a new procut
+        create_product_query = "INSERT INTO products (category, description, price, title, favorite, img_url,id)"
+        create_product_query += "values({},'{}',{},'{}',{} ,'{}',{})".format(prod["category"],prod["description"], prod["price"], prod["title"], prod["favorite"],prod["img_url"], prod["id"])
+        print(create_product_query)
+        cursor.execute(create_product_query)
+        connection.commit() 
+        return "new products created"      
+    except Exception as e:
+      response.status = 500
+      response["status__line"] = "internal Error"
+      error = {"STATUS": "ERROR", "MSG": "internal Error", "PRODUCT _ID":product_id}
+      return json.dumps(error)  
+   
 
 
 @get("/product/<id>")
 def get_product(id):
-    pass
+  pass
 
 
 @delete("/product/<id>")
 def delete_poduct():
-    pass
+  pass
 
 
 @get("/products")
