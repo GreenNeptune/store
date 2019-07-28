@@ -11,9 +11,8 @@ connection = pymysql.connect(host="localhost",
                      charset="utf8",
                      cursorclass=pymysql.cursors.DictCursor)
 
-
+          
 # categories endpoints
-
 @post("/category")
 def create_category():
   with connection.cursor() as cursor:
@@ -92,7 +91,6 @@ def get_all_categories():
           return json.dumps(error)   
 
 # products endpoints
-
 @post("/product")
 def add_or_edit_product():
   with connection.cursor() as cursor:
@@ -136,7 +134,6 @@ def add_or_edit_product():
         # creating a new procut
         create_product_query = "INSERT INTO products (category, description, price, title, favorite, img_url,id)"
         create_product_query += "values({},'{}',{},'{}',{} ,'{}',{})".format(prod["category"],prod["description"], prod["price"], prod["title"], prod["favorite"],prod["img_url"], prod["id"])
-        print(create_product_query)
         cursor.execute(create_product_query)
         connection.commit()
         success = {"STATUS":"The product was added/updated successfully"} 
@@ -149,8 +146,6 @@ def add_or_edit_product():
       error = {"STATUS": "ERROR", "MSG": "internal Error"}
       return json.dumps(error)  
    
-
-
 @get("/product/<id>")
 def get_product(id):
   prod_id = id
@@ -160,7 +155,6 @@ def get_product(id):
       cursor.execute(search_category_query)
       product_exists = cursor.fetchone() 
       product_exists["favorite"] = convert_bit_to_str(product_exists["favorite"])
-      print(product_exists)
       if not product_exists:
         response.status = 404
         response["status__line"] = "product not found"
@@ -175,7 +169,6 @@ def get_product(id):
       response["status__line"] = "internal Error"
       error = {"STATUS": "ERROR", "MSG": "internal Error"}
       return json.dumps(error) 
-
 
 @delete("/product/<id>")
 def delete_poduct(id):
@@ -202,7 +195,6 @@ def delete_poduct(id):
       response["status__line"] = "internal Error"
       error = {"STATUS": "ERROR", "MSG": "internal Error"}
       return json.dumps(error)
-
 
 @get("/products")
 def get_all_products():
