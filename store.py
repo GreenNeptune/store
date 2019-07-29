@@ -16,9 +16,8 @@ connection = pymysql.connect(host="localhost",
 @post("/category")
 def create_category():
   with connection.cursor() as cursor:
-    try:
-      category_name = request.json.get("name")
-      
+    try:      
+      category_name = request.forms.get("name")
       if category_name is None:
         response.status = 400
         response["status__line"] = "name parameter is missing"
@@ -35,10 +34,11 @@ def create_category():
         return json.dumps(error)
 
       sql = 'INSERT INTO categories VALUES(null,"{}")'.format(category_name)
+      cursor.execute(sql)
       connection.commit()
       response.status = 201
       response["status__line"] = "category created successfully"
-      success = {"STATUS":"The category was created successfully"}
+      success = {"STATUS":"The category was created successfully", "CAT_ID": cursor.lastrowid}
       return json.dumps(success)
     except Exception as e:
       response.status = 500
