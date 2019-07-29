@@ -1,3 +1,6 @@
+create database store;
+use store;
+
 CREATE TABLE categories (
   id int(11) NOT NULL AUTO_INCREMENT,
   name varchar(60) DEFAULT 'NOT NULL',
